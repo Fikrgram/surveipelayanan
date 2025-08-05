@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SKM Digital Perpustakaan</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCI_FrDaO-FuMeJvQxvACKqLJrsHI_tHWg",
+      authDomain: "survei-pelayanan.firebaseapp.com",
+      databaseURL: "https://survei-pelayanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "survei-pelayanan",
+      storageBucket: "survei-pelayanan.firebasestorage.app",
+      messagingSenderId: "147429967408",
+      appId: "1:147429967408:web:a00cc6db64b1125c778ff5",
+      measurementId: "G-LFPY8VGFXK"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+  </script>
+  <style>
+    canvas { height: 300px !important; }
+    .rating-btn {
+      transition: all 0.2s ease;
+    }
+    .rating-btn.active {
+      background-color: #2563eb !important;
+      color: #fff !important;
+      transform: scale(1.1);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-blue-50 to-white min-h-screen">
+  <header class="bg-blue-700 text-white p-12 text-center shadow-md rounded-b-3xl">
+    <h1 class="text-4xl font-bold mb-2">Selamat Datang</h1>
+    <p class="text-lg">Survei Kepuasan Pelayanan Perpustakaan</p>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6 bg-white shadow-xl mt-8 rounded-3xl">
+    <h2 class="text-2xl font-semibold text-center text-blue-700 mb-6">Nilai tingkat kepuasan Anda terhadap layanan berikut (1–10)</h2>
+
+    <!-- Grafik responden sebelumnya -->
+    <section class="max-w-3xl mx-auto mb-8 p-6 bg-gradient-to-tr from-blue-100 to-white shadow-md rounded-2xl" id="chartAwalSection">
+      <h2 class="text-lg font-semibold mb-2 text-center text-blue-700">Rata-rata Kepuasan Responden Sebelumnya</h2>
+      <p class="text-center text-sm text-gray-600 mb-4" id="jumlahRespondenText">Memuat data responden...</p>
+      <canvas id="chartAwal"></canvas>
+    </section>
+
+    <form id="surveyForm">
+      <div id="step-container"></div>
+      <div class="flex justify-between mt-6">
+        <button type="button" id="prevBtn" class="bg-gray-300 text-gray-700 px-5 py-2 rounded-xl font-medium hidden hover:bg-gray-400">Sebelumnya</button>
+        <button type="button" id="nextBtn" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-blue-700">Selanjutnya</button>
+      </div>
+      <div class="mt-6 hidden" id="submitSection">
+        <label class="block mb-2 font-medium">Komentar (Opsional)</label>
+        <textarea name="komentar" class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300" rows="3" placeholder="Tulis komentar Anda..."></textarea>
+        <button id="submitBtn" type="submit" class="bg-green-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-green-700 w-full">Kirim</button>
+      </div>
+    </form>
+  </main>
+
+  <section class="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl hidden" id="resultSection">
+    <h2 class="text-lg font-semibold mb-4 text-center text-blue-700">Hasil Rata-rata Kepuasan Anda</h2>
+    <canvas id="chartKepuasan"></canvas>
+  </section>
+
+  <script>
+    const aspekList = [
+      { judul: "Keramahan Petugas", prefix: "keramahan", pertanyaan: [
+        "Petugas menyambut dengan ramah", "Petugas menjawab dengan sopan", "Petugas sigap membantu", "Nyaman berinteraksi dengan petugas", "Informasi dari petugas lengkap"
+      ]},
+      { judul: "Fasilitas Ruang Baca", prefix: "fasilitas", pertanyaan: [
+        "Kursi dan meja nyaman", "Pencahayaan cukup", "Colokan listrik tersedia", "Area baca inklusif", "Nyaman untuk waktu lama"
+      ]},
+      { judul: "Koleksi Buku", prefix: "koleksi", pertanyaan: [
+        "Buku yang dicari tersedia", "Koleksi selalu diperbarui", "Penyusunan buku rapi", "Kategori buku beragam", "Kondisi fisik buku baik"
+      ]},
+      { judul: "Kebersihan dan Kenyamanan", prefix: "kebersihan", pertanyaan: [
+        "Ruangan bersih dan terawat", "Toilet bersih", "Udara nyaman", "Tempat sampah tersedia", "Lingkungan mendukung belajar"
+      ]},
+      { judul: "Proses Layanan", prefix: "layanan", pertanyaan: [
+        "Peminjaman cepat dan mudah", "Aturan dijelaskan jelas", "Dapat notifikasi pengembalian", "Pengembalian mudah", "Sistem layanan online lancar"
+      ]}
+    ];
+
+    let currentStep = 0;
+    const stepContainer = document.getElementById("step-container");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitSection = document.getElementById("submitSection");
+    const resultSection = document.getElementById("resultSection");
+    const jawaban = {};
+
+    function renderStep(step) {
+      stepContainer.innerHTML = `<h3 class="text-blue-600 font-bold text-xl mb-6 text-center">${aspekList[step].judul}</h3>`;
+      aspekList[step].pertanyaan.forEach((text, index) => {
+        const id = `${aspekList[step].prefix}${index + 1}`;
+        jawaban[id] = 0;
+        stepContainer.innerHTML += `
+          <div class="mb-6">
+            <label class="block font-medium mb-3">${text}</label>
+            <div class="flex flex-wrap gap-2">
+              ${[...Array(10)].map((_, i) => `
+                <button type="button" data-id="${id}" data-val="${i + 1}" class="rating-btn bg-gray-200 hover:bg-blue-500 hover:text-white text-sm w-10 h-10 rounded-full shadow-sm">${i + 1}</button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      document.querySelectorAll(".rating-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const val = parseInt(btn.dataset.val);
+          jawaban[id] = val;
+          document.querySelectorAll(`[data-id='${id}']`).forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+        });
+      });
+
+      prevBtn.classList.toggle("hidden", step === 0);
+      nextBtn.textContent = step === aspekList.length - 1 ? "Selesai" : "Selanjutnya";
+    }
+
+    renderStep(currentStep);
+
+    nextBtn.addEventListener("click", () => {
+      if (currentStep < aspekList.length - 1) {
+        currentStep++;
+        renderStep(currentStep);
+      } else {
+        stepContainer.classList.add("hidden");
+        nextBtn.classList.add("hidden");
+        prevBtn.classList.add("hidden");
+        submitSection.classList.remove("hidden");
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep--;
+        renderStep(currentStep);
+      }
+    });
+
+    document.getElementById("surveyForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const hasil = aspekList.map(aspek => {
+        let total = 0;
+        for (let i = 1; i <= 5; i++) {
+          total += jawaban[`${aspek.prefix}${i}`] * 10;
+        }
+        return Math.round(total / 5);
+      });
+
+      const komentar = this.komentar.value;
+      const dataKirim = {
+        waktu: new Date().toISOString(),
+        komentar: komentar,
+        hasil: {},
+        jawaban: { ...jawaban }
+      };
+
+      aspekList.forEach((aspek, index) => {
+        dataKirim.hasil[aspek.prefix] = hasil[index];
+      });
+
+      try {
+        await database.ref('respon_survei').push(dataKirim);
+        alert("Data berhasil dikirim!");
+      } catch (error) {
+        console.error("Gagal kirim ke Firebase:", error);
+        alert("Terjadi kesalahan saat mengirim data.");
+      }
+
+      resultSection.classList.remove("hidden");
+      const ctx = document.getElementById("chartKepuasan").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: aspekList.map(a => a.judul.split(" ")[0]),
+          datasets: [{
+            label: "Rata-rata (%)",
+            data: hasil,
+            backgroundColor: ["#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#6366F1"]
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+
+      setTimeout(() => {
+        resultSection.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    });
+
+    async function tampilkanChartAwalDariFirebase() {
+      const snapshot = await database.ref('respon_survei').once('value');
+      const data = snapshot.val();
+      if (!data) return;
+
+      const total = [0, 0, 0, 0, 0];
+      let jumlahResponden = 0;
+
+      Object.values(data).forEach(item => {
+        if (!item.hasil) return;
+        total[0] += item.hasil.keramahan || 0;
+        total[1] += item.hasil.fasilitas || 0;
+        total[2] += item.hasil.koleksi || 0;
+        total[3] += item.hasil.kebersihan || 0;
+        total[4] += item.hasil.layanan || 0;
+        jumlahResponden++;
+      });
+
+      if (jumlahResponden === 0) return;
+
+      const rataRata = total.map(nilai => Math.round(nilai / jumlahResponden));
+      document.getElementById("jumlahRespondenText").textContent = `Total responden: ${jumlahResponden} orang`;
+
+      const ctx = document.getElementById("chartAwal").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Keramahan", "Fasilitas", "Koleksi", "Kebersihan", "Layanan"],
+          datasets: [{
+            label: "Responden Sebelumnya (%)",
+            data: rataRata,
+            backgroundColor: "#3B82F6"
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    window.addEventListener("load", () => {
+      tampilkanChartAwalDariFirebase();
+    });
+  </script>
+</body>
+</html>
