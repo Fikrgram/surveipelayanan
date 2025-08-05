@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -21,35 +22,21 @@
       color: #fff !important;
       transform: scale(1.1);
       font-weight: bold;
+      border: 2px solid #1d4ed8;
+      box-shadow: 0 0 10px rgba(37,99,235,0.3);
     }
   </style>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCI_FrDaO-FuMeJvQxvACKqLJrsHI_tHWg",
-      authDomain: "survei-pelayanan.firebaseapp.com",
-      databaseURL: "https://survei-pelayanan-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "survei-pelayanan",
-      storageBucket: "survei-pelayanan.appspot.com",
-      messagingSenderId: "147429967408",
-      appId: "1:147429967408:web:a00cc6db64b1125c778ff5",
-      measurementId: "G-LFPY8VGFXK"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-  </script>
 </head>
 <body class="bg-gradient-to-tr from-blue-50 to-white min-h-screen">
 
-  <!-- HEADER -->
-  <header class="bg-blue-700 text-white py-10 px-6 text-center shadow-md rounded-b-3xl">
-    <div class="flex flex-col items-center space-y-4">
-      <img src="Sipus.png" alt="Logo" class="w-28 h-28 rounded-full border-4 border-white shadow-md"/>
-      <h1 class="text-3xl sm:text-4xl font-bold">Survei Indeks Pelayanan Perpustakaan</h1>
-      <p class="text-base sm:text-lg font-bold">SIPUS</p>
+  <header class="bg-blue-700 text-white py-8 px-6 text-center shadow-md rounded-b-3xl">
+    <div class="flex flex-col items-center space-y-3">
+      <img src="Sipus.png" alt="Logo" class="w-24 h-24 rounded-full border-4 border-white shadow-md"/>
+      <h1 class="text-3xl font-bold">Survei Indeks Pelayanan Perpustakaan</h1>
+      <p class="text-base font-semibold">SIPUS</p>
     </div>
   </header>
 
-  <!-- HALAMAN AWAL: PIE CHART -->
   <section id="chartAwalSection" class="max-w-3xl mx-auto mt-8 p-6 bg-gradient-to-tr from-blue-100 to-white shadow-md rounded-2xl">
     <h2 class="text-lg font-semibold mb-2 text-center text-blue-700">Rata-rata Kepuasan Responden Sebelumnya</h2>
     <p class="text-center text-sm text-gray-600 mb-4" id="jumlahRespondenText">Memuat data responden...</p>
@@ -61,10 +48,10 @@
     </div>
   </section>
 
-  <!-- FORM SURVEI -->
   <main id="surveySection" class="max-w-4xl mx-auto p-6 bg-white shadow-xl mt-8 rounded-3xl hidden">
-    <h2 class="text-2xl font-semibold text-center text-blue-700 mb-6"></h2>
-
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+      <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%;"></div>
+    </div>
     <form id="surveyForm">
       <div id="step-container"></div>
       <div class="flex justify-between mt-6">
@@ -79,14 +66,43 @@
     </form>
   </main>
 
-  <!-- HASIL CHART -->
   <section class="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl hidden" id="resultSection">
     <h2 class="text-lg font-semibold mb-4 text-center text-blue-700">Hasil Rata-rata Kepuasan Anda</h2>
     <canvas id="chartKepuasan"></canvas>
   </section>
 
-  <!-- SCRIPT -->
   <script>
+    function playClickSound() {
+}
+
+function playSuccessSound() {
+  const sound = document.getElementById("successSound");
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play();
+  }
+}
+
+function playClickSound() {
+      const sound = document.getElementById("clickSound");
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCI_FrDaO-FuMeJvQxvACKqLJrsHI_tHWg",
+      authDomain: "survei-pelayanan.firebaseapp.com",
+      databaseURL: "https://survei-pelayanan-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "survei-pelayanan",
+      storageBucket: "survei-pelayanan.appspot.com",
+      messagingSenderId: "147429967408",
+      appId: "1:147429967408:web:a00cc6db64b1125c778ff5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     const aspekList = [
       { judul: "Keramahan Petugas", prefix: "keramahan", pertanyaan: ["Petugas menyambut dengan ramah", "Petugas menjawab dengan sopan", "Petugas sigap membantu", "Nyaman berinteraksi dengan petugas", "Informasi dari petugas lengkap"] },
       { judul: "Fasilitas Ruang Baca", prefix: "fasilitas", pertanyaan: ["Kursi dan meja nyaman", "Pencahayaan cukup", "Colokan listrik tersedia", "Area baca inklusif", "Nyaman untuk waktu lama"] },
@@ -109,9 +125,9 @@
         const id = `${aspekList[step].prefix}${index + 1}`;
         jawaban[id] = jawaban[id] || 0;
         stepContainer.innerHTML += `
-          <div class="mb-6">
+          <div class="mb-6 bg-white p-4 rounded-2xl shadow">
             <label class="block font-medium mb-3">${text}</label>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
               ${[...Array(10)].map((_, i) => `
                 <button type="button" data-id="${id}" data-val="${i + 1}" class="rating-btn bg-gray-200 hover:bg-blue-500 hover:text-white text-sm w-10 h-10 rounded-full shadow-sm ${jawaban[id] === i + 1 ? 'active' : ''}">${i + 1}</button>
               `).join('')}
@@ -119,9 +135,9 @@
           </div>
         `;
       });
-
       document.querySelectorAll(".rating-btn").forEach(btn => {
         btn.addEventListener("click", () => {
+          playClickSound();
           const id = btn.dataset.id;
           const val = parseInt(btn.dataset.val);
           jawaban[id] = val;
@@ -129,14 +145,18 @@
           btn.classList.add("active");
         });
       });
-
       prevBtn.classList.toggle("hidden", step === 0);
       nextBtn.textContent = step === aspekList.length - 1 ? "Selesai" : "Selanjutnya";
+      updateProgressBar();
     }
 
-    renderStep(currentStep);
+    function updateProgressBar() {
+      const progress = ((currentStep + 1) / aspekList.length) * 100;
+      document.getElementById("progressBar").style.width = `${progress}%`;
+    }
 
     nextBtn.addEventListener("click", () => {
+      playClickSound();
       if (currentStep < aspekList.length - 1) {
         currentStep++;
         renderStep(currentStep);
@@ -149,6 +169,7 @@
     });
 
     prevBtn.addEventListener("click", () => {
+      playClickSound();
       if (currentStep > 0) {
         currentStep--;
         renderStep(currentStep);
@@ -157,6 +178,12 @@
 
     document.getElementById("surveyForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById("submitBtn");
+      const komentarField = this.komentar;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Mengirim...";
+      playClickSound();
 
       const hasil = aspekList.map(aspek => {
         let total = 0;
@@ -166,24 +193,32 @@
         return Math.round(total / 5);
       });
 
-      const komentar = this.komentar.value;
       const dataKirim = {
         waktu: new Date().toISOString(),
-        komentar: komentar,
+        komentar: komentarField.value,
         hasil: {},
         jawaban: { ...jawaban }
       };
-
       aspekList.forEach((aspek, index) => {
         dataKirim.hasil[aspek.prefix] = hasil[index];
       });
 
       try {
         await database.ref('respon_survei').push(dataKirim);
+        playSuccessSound();
         alert("Data berhasil dikirim!");
+        komentarField.value = "";
+        komentarField.disabled = true;
+        submitBtn.textContent = "Terkirim";
+        submitBtn.classList.add("bg-gray-400");
+        submitBtn.classList.remove("bg-green-600", "hover:bg-green-700");
+        submitSection.classList.add("hidden");
       } catch (error) {
         console.error("Gagal kirim ke Firebase:", error);
         alert("Terjadi kesalahan saat mengirim data.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kirim";
+        return;
       }
 
       resultSection.classList.remove("hidden");
@@ -214,10 +249,8 @@
       const snapshot = await database.ref('respon_survei').once('value');
       const data = snapshot.val();
       if (!data) return;
-
       const total = [0, 0, 0, 0, 0];
       let jumlahResponden = 0;
-
       Object.values(data).forEach(item => {
         if (!item.hasil) return;
         total[0] += item.hasil.keramahan || 0;
@@ -227,12 +260,9 @@
         total[4] += item.hasil.layanan || 0;
         jumlahResponden++;
       });
-
       if (jumlahResponden === 0) return;
-
       const rataRata = total.map(nilai => Math.round(nilai / jumlahResponden));
       document.getElementById("jumlahRespondenText").textContent = `Total responden: ${jumlahResponden} orang`;
-
       const ctx = document.getElementById("chartAwal").getContext("2d");
       new Chart(ctx, {
         type: "pie",
@@ -254,12 +284,16 @@
     }
 
     function mulaiSurvei() {
+      playClickSound();
       document.getElementById("chartAwalSection").classList.add("hidden");
       document.getElementById("surveySection").classList.remove("hidden");
       document.getElementById("surveySection").scrollIntoView({ behavior: "smooth" });
     }
 
     window.addEventListener("load", tampilkanChartAwalDariFirebase);
+    renderStep(currentStep);
   </script>
+<audio id="clickSound" src="klik.mp3" preload="auto"></audio>
+<audio id="successSound" src="selesai.mp3" preload="auto"></audio>
 </body>
 </html>
