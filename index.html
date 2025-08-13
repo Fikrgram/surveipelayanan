@@ -1,89 +1,118 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SIPUS – Survei Indeks Pelayanan Perpustakaan</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SIPUS – Survei Indeks Pelayanan Perpustakaan</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
     canvas {
       max-width: 100% !important;
       height: auto !important;
     }
-    .rating-btn {
-      transition: all 0.2s ease;
+    /* Animasi Floating */
+    @keyframes bubbleFloat {
+      0% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-4px) scale(1.05); }
+      100% { transform: translateY(0) scale(1); }
     }
-    .rating-btn.active {
-      background-color: #2563eb !important;
-      color: #fff !important;
-      transform: scale(1.1);
+    /* Bubble Rating Style */
+    .rating-bubble {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+      color: #1e3a8a;
       font-weight: bold;
-      border: 2px solid #1d4ed8;
-      box-shadow: 0 0 10px rgba(37,99,235,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-size: 14px;
+      animation: bubbleFloat 2.5s ease-in-out infinite;
     }
-  </style>
+    .rating-bubble:hover {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, #93c5fd, #60a5fa);
+      color: white;
+      box-shadow: 0 0 12px rgba(59,130,246,0.6);
+      animation: none; /* stop animasi saat hover */
+    }
+    .rating-bubble.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      transform: scale(1.15);
+      box-shadow: 0 0 15px rgba(37,99,235,0.6);
+    }
+</style>
 </head>
 <body class="bg-gradient-to-tr from-blue-50 to-white min-h-screen">
+<header class="bg-blue-700 text-white py-8 px-6 text-center shadow-md rounded-b-3xl">
+<div class="flex flex-col items-center space-y-3">
+<img alt="Logo" class="w-24 h-24 rounded-full border-4 border-white shadow-md" src="Sipus.png"/>
+<h1 class="text-3xl font-bold">Survei Indeks Pelayanan Perpustakaan</h1>
+<p class="text-base font-semibold">SIPUS</p>
+</div>
+</header>
 
-  <header class="bg-blue-700 text-white py-8 px-6 text-center shadow-md rounded-b-3xl">
-    <div class="flex flex-col items-center space-y-3">
-      <img src="Sipus.png" alt="Logo" class="w-24 h-24 rounded-full border-4 border-white shadow-md"/>
-      <h1 class="text-3xl font-bold">Survei Indeks Pelayanan Perpustakaan</h1>
-      <p class="text-base font-semibold">SIPUS</p>
-    </div>
-  </header>
+<!-- Mobile -->
+<section class="sm:hidden text-center px-6 py-10 bg-gradient-to-tr from-blue-100 to-white rounded-3xl shadow-md mx-4 mt-6">
+<h1 class="text-2xl font-bold text-blue-700 mb-2">Survei Indeks Pelayanan</h1>
+<p class="text-gray-600 mb-4">Bantu kami meningkatkan layanan perpustakaan 💬</p>
+<button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all duration-300 ease-in-out hover:scale-105" onclick="mulaiSurvei()">Mulai Survei</button>
+</section>
 
-  <section id="chartAwalSection" class="max-w-3xl mx-auto mt-8 p-6 bg-gradient-to-tr from-blue-100 to-white shadow-md rounded-2xl">
-    <h2 class="text-lg font-semibold mb-2 text-center text-blue-700">Rata-rata Kepuasan Responden Sebelumnya</h2>
-    <p class="text-center text-sm text-gray-600 mb-4" id="jumlahRespondenText">Memuat data responden...</p>
-    <div class="w-full sm:w-2/3 md:w-1/2 mx-auto">
-      <canvas id="chartAwal"></canvas>
-    </div>
-    <div class="text-center mt-6">
-      <button onclick="mulaiSurvei()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full shadow-md">Mulai Survei</button>
-    </div>
-  </section>
+<!-- Desktop Chart Awal -->
+<section class="hidden sm:block max-w-3xl mx-auto mt-8 p-6 bg-gradient-to-tr from-blue-100 to-white shadow-md rounded-2xl" id="chartAwalSection">
+<h2 class="text-lg font-semibold mb-2 text-center text-blue-700">Rata-rata Kepuasan Responden Sebelumnya</h2>
+<p class="text-center text-sm text-gray-600 mb-4" id="jumlahRespondenText">Memuat data responden...</p>
+<div class="w-full sm:w-2/3 md:w-1/2 mx-auto">
+<canvas id="chartAwal"></canvas>
+</div>
+<div class="text-center mt-6">
+  <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all duration-300 ease-in-out hover:scale-105" onclick="mulaiSurvei()">Mulai Survei</button>
+</div>
+</section>
 
-  <main id="surveySection" class="max-w-4xl mx-auto p-6 bg-white shadow-xl mt-8 rounded-3xl hidden">
-    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-      <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%;"></div>
-    </div>
-    <form id="surveyForm">
-      <div id="step-container"></div>
-      <div class="flex justify-between mt-6">
-        <button type="button" id="prevBtn" class="bg-gray-300 text-gray-700 px-5 py-2 rounded-xl font-medium hidden hover:bg-gray-400">Sebelumnya</button>
-        <button type="button" id="nextBtn" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-blue-700">Selanjutnya</button>
-      </div>
-      <div class="mt-6 hidden" id="submitSection">
-        <label class="block mb-2 font-medium">Komentar (Opsional)</label>
-        <textarea name="komentar" class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300" rows="3" placeholder="Tulis komentar Anda..."></textarea>
-        <button id="submitBtn" type="submit" class="bg-green-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-green-700 w-full">Kirim</button>
-      </div>
-    </form>
-  </main>
+<!-- Survey Section -->
+<main class="max-w-4xl mx-auto p-6 bg-white shadow-xl mt-8 rounded-3xl hidden" id="surveySection">
+<div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+<div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" id="progressBar" style="width: 0%;"></div>
+</div>
+<form id="surveyForm">
+<div id="step-container"></div>
+<div class="flex justify-between mt-6">
+<button class="bg-gray-300 text-gray-700 px-5 py-2 rounded-xl font-medium hidden hover:bg-gray-400" id="prevBtn" type="button">Sebelumnya</button>
+<button class="bg-blue-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-blue-700" id="nextBtn" type="button">Selanjutnya</button>
+</div>
+<div class="mt-6 hidden" id="submitSection">
+<label class="block mb-2 font-medium">Komentar (Opsional)</label>
+<textarea class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300" name="komentar" placeholder="Tulis komentar Anda..." rows="3"></textarea>
+<button class="bg-green-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-green-700 w-full" id="submitBtn" type="submit">Kirim</button>
+</div>
+</form>
+</main>
 
-  <section class="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl hidden" id="resultSection">
-    <h2 class="text-lg font-semibold mb-4 text-center text-blue-700">Hasil Rata-rata Kepuasan Anda</h2>
-    <canvas id="chartKepuasan"></canvas>
-  </section>
+<!-- Result Section -->
+<section class="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl hidden" id="resultSection">
+<h2 class="text-lg font-semibold mb-4 text-center text-blue-700">Hasil Rata-rata Kepuasan Anda</h2>
+<canvas id="chartKepuasan"></canvas>
+</section>
 
-  <script>
+<script>
+    function playSuccessSound() {
+      const sound = document.getElementById("successSound");
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
     function playClickSound() {
-}
-
-function playSuccessSound() {
-  const sound = document.getElementById("successSound");
-  if (sound) {
-    sound.currentTime = 0;
-    sound.play();
-  }
-}
-
-function playClickSound() {
       const sound = document.getElementById("clickSound");
       if (sound) {
         sound.currentTime = 0;
@@ -127,15 +156,18 @@ function playClickSound() {
         stepContainer.innerHTML += `
           <div class="mb-6 bg-white p-4 rounded-2xl shadow">
             <label class="block font-medium mb-3">${text}</label>
-            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+            <div class="flex flex-wrap gap-3 justify-center sm:justify-start">
               ${[...Array(10)].map((_, i) => `
-                <button type="button" data-id="${id}" data-val="${i + 1}" class="rating-btn bg-gray-200 hover:bg-blue-500 hover:text-white text-sm w-10 h-10 rounded-full shadow-sm ${jawaban[id] === i + 1 ? 'active' : ''}">${i + 1}</button>
+                <div type="button" data-id="${id}" data-val="${i + 1}" 
+                  class="rating-bubble ${jawaban[id] === i + 1 ? 'active' : ''}">
+                  ${i + 1}
+                </div>
               `).join('')}
             </div>
           </div>
         `;
       });
-      document.querySelectorAll(".rating-btn").forEach(btn => {
+      document.querySelectorAll(".rating-bubble").forEach(btn => {
         btn.addEventListener("click", () => {
           playClickSound();
           const id = btn.dataset.id;
@@ -234,9 +266,7 @@ function playClickSound() {
           }]
         },
         options: {
-          scales: {
-            y: { beginAtZero: true, max: 100 }
-          }
+          scales: { y: { beginAtZero: true, max: 100 } }
         }
       });
 
@@ -276,9 +306,7 @@ function playClickSound() {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { position: "bottom" }
-          }
+          plugins: { legend: { position: "bottom" } }
         }
       });
     }
@@ -292,8 +320,8 @@ function playClickSound() {
 
     window.addEventListener("load", tampilkanChartAwalDariFirebase);
     renderStep(currentStep);
-  </script>
-<audio id="clickSound" src="klik.mp3" preload="auto"></audio>
-<audio id="successSound" src="selesai.mp3" preload="auto"></audio>
+</script>
+<audio id="clickSound" preload="auto" src="klik.mp3"></audio>
+<audio id="successSound" preload="auto" src="selesai.mp3"></audio>
 </body>
 </html>
