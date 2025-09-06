@@ -63,21 +63,7 @@ body {
   font-weight: 300;
 }
 
-/* Admin Button */
-.admin-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255,255,255,0.2);
-  color: white;
-  border: 2px solid rgba(255,255,255,0.3);
-  padding: 10px 20px;
-  border-radius: 25px;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  font-weight: 600;
-}
+
 
 .admin-button:hover {
   background: rgba(255,255,255,0.3);
@@ -720,7 +706,7 @@ body {
       <h3>🔒 Masukkan Password Admin</h3>
       <div style="margin: 20px 0;">
         <input type="password" id="adminPasswordInput" class="password-input" placeholder="Password Admin">
-        <button class="login-btn" onclick="loginAdmin()">Login</button>
+    
       </div>
     </div>
 
@@ -751,7 +737,6 @@ body {
 <!-- Header -->
 <div class="header">
   <div class="container">
-    <button class="admin-button" onclick="openAdmin()">⚙️ Admin</button>
     <div class="logo"><img src="sipus.png" alt="Logo SIPUS" style="width:90px;height:90px;border-radius:70%;"></div>
     <h1 class="title">SIPUS</h1>
     <p class="subtitle">Survei Indeks Pelayanan Perpustakaan</p>
