@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SIPUS — Survei Indeks Pelayanan Perpustakaan</title>
+<title>SIPUS – Survei Indeks Pelayanan Perpustakaan</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -33,6 +33,7 @@ body {
   text-align: center;
   padding: 40px 0;
   color: white;
+  position: relative;
 }
 
 .logo {
@@ -60,6 +61,27 @@ body {
   font-size: 1.1rem;
   opacity: 0.9;
   font-weight: 300;
+}
+
+/* Admin Button */
+.admin-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 2px solid rgba(255,255,255,0.3);
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.admin-button:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
 }
 
 /* Card Styles */
@@ -156,17 +178,17 @@ body {
 }
 
 .question-card {
-  background: #f8fafc;
-  border-radius: 16px;
+  background: linear-gradient(135deg, #e0e7ff, #eef2ff);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 20px;
   padding: 30px;
-  margin-bottom: 24px;
-  border: 2px solid transparent;
+  box-shadow: 0 10px 20px rgba(99,102,241,0.08);
   transition: all 0.3s ease;
 }
 
 .question-card:hover {
-  border-color: rgba(102,126,234,0.2);
-  background: #f1f5f9;
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(99,102,241,0.15);
 }
 
 .question-text {
@@ -176,11 +198,20 @@ body {
   color: #374151;
 }
 
+/* ENHANCED RATING CONTAINER */
 .rating-container {
   display: flex;
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+  perspective: 1000px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 15px;
+  margin-top: 10px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .rating-button {
@@ -193,28 +224,117 @@ body {
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Ripple Effect */
+.rating-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.6s ease-out;
+  pointer-events: none;
+}
+
+/* Particle Effect */
+.rating-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.3) 1px, transparent 1px),
+    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 1px, transparent 1px),
+    radial-gradient(circle at 40% 70%, rgba(255,255,255,0.2) 1px, transparent 1px);
+  background-size: 20px 20px, 25px 25px, 15px 15px;
+  opacity: 0;
+  transition: all 0.8s ease-out;
+  pointer-events: none;
+  animation: sparkle 3s infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: rotate(0deg); }
+  50% { opacity: 1; transform: rotate(180deg); }
 }
 
 .rating-button:hover {
   border-color: #667eea;
   background: radial-gradient(circle at top left, #8b5cf6, #6366f1);
   color: white;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 6px 15px rgba(102,126,234,0.4);
+  transform: scale(1.15) rotate(5deg) translateY(-5px);
+  box-shadow: 
+    0 15px 35px rgba(102,126,234,0.4),
+    0 0 30px rgba(102,126,234,0.3),
+    inset 0 2px 10px rgba(255,255,255,0.2);
+  z-index: 10;
+}
+
+.rating-button:hover::before {
+  width: 120px;
+  height: 120px;
+  animation: ripple 0.6s ease-out;
+}
+
+.rating-button:hover::after {
+  opacity: 0.8;
+  transform: rotate(360deg) scale(1.1);
+}
+
+@keyframes ripple {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 120px; height: 120px; opacity: 0; }
 }
 
 .rating-button.active {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-color: #6366f1;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-color: #4f46e5;
   color: white;
   transform: scale(1.2);
-  box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+  box-shadow: 0 8px 20px rgba(79,70,229,0.4);
 }
+
+.rating-button.active::after {
+  opacity: 1;
+  animation: sparkle 1.5s infinite;
+}
+
+@keyframes clickPulse {
+  0% { transform: scale(1.2); }
+  50% { transform: scale(1.4) rotateY(180deg); }
+  100% { transform: scale(1.2); }
+}
+
+.rating-button.clicked {
+  animation: clickPulse 0.6s ease-out;
+}
+
+/* Color Variations for Different Values */
+.rating-button[data-value="1"]:hover { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.rating-button[data-value="2"]:hover { background: linear-gradient(135deg, #f97316, #ea580c); }
+.rating-button[data-value="3"]:hover { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.rating-button[data-value="4"]:hover { background: linear-gradient(135deg, #eab308, #ca8a04); }
+.rating-button[data-value="5"]:hover { background: linear-gradient(135deg, #84cc16, #65a30d); }
+.rating-button[data-value="6"]:hover { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.rating-button[data-value="7"]:hover { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.rating-button[data-value="8"]:hover { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.rating-button[data-value="9"]:hover { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.rating-button[data-value="10"]:hover { background: linear-gradient(135deg, #ec4899, #db2777); }
 
 /* Navigation */
 .navigation {
@@ -364,6 +484,148 @@ body {
   font-weight: 500;
 }
 
+/* Admin Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.close-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.close-btn:hover {
+  background: #dc2626;
+}
+
+.admin-section {
+  margin-bottom: 30px;
+}
+
+.admin-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4f46e5;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.question-editor {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.question-editor label {
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.question-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.question-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(16,185,129,0.3);
+}
+
+.admin-password {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.password-input {
+  padding: 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin: 0 10px;
+  width: 200px;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .container {
@@ -393,6 +655,10 @@ body {
     font-size: 0.9rem;
   }
   
+  .rating-button:hover {
+    transform: scale(1.1) translateY(-2px);
+  }
+  
   .navigation {
     flex-direction: column-reverse;
     gap: 12px;
@@ -400,6 +666,15 @@ body {
   
   .nav-button {
     width: 100%;
+  }
+
+  .admin-button {
+    display: none;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 20px;
   }
 }
 
@@ -433,129 +708,159 @@ body {
 <audio id="klikSound" src="klik.mp3" preload="auto"></audio>
 <audio id="selesaiSound" src="selesai.mp3" preload="auto"></audio>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="container">
-      <div class="logo"><img src="sipus.png" alt="Logo SIPUS" style="width:90px;height:90px;border-radius:70%;"></div>
-      <h1 class="title">SIPUS</h1>
-      <p class="subtitle">Survei Indeks Pelayanan Perpustakaan</p>
+<!-- Admin Modal -->
+<div id="adminModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Admin Panel - Editor Pertanyaan</h2>
+      <button class="close-btn" onclick="closeAdmin()">✕ Tutup</button>
+    </div>
+    
+    <div id="adminLogin" class="admin-password">
+      <h3>🔒 Masukkan Password Admin</h3>
+      <div style="margin: 20px 0;">
+        <input type="password" id="adminPasswordInput" class="password-input" placeholder="Password Admin">
+        <button class="login-btn" onclick="loginAdmin()">Login</button>
+      </div>
+    </div>
+
+    <div id="adminContent" class="hidden">
+      <div id="adminEditor"></div>
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="save-btn" onclick="saveQuestions()">💾 Simpan Semua Perubahan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding Popup -->
+<div id="onboardingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-lg p-6 max-w-sm text-center">
+    <h2 class="text-xl font-bold mb-4 text-gray-800">📊 Panduan Penilaian</h2>
+    <p class="text-gray-600 mb-6">
+      Gunakan skala <b>1–10</b>:<br>
+      <b>1</b> = nilai terendah (sangat tidak puas)<br>
+      <b>10</b> = nilai tertinggi (sangat puas)
+    </p>
+    <button id="closeOnboarding" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition">
+      Mengerti
+    </button>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="container">
+    <button class="admin-button" onclick="openAdmin()">⚙️ Admin</button>
+    <div class="logo"><img src="sipus.png" alt="Logo SIPUS" style="width:90px;height:90px;border-radius:70%;"></div>
+    <h1 class="title">SIPUS</h1>
+    <p class="subtitle">Survei Indeks Pelayanan Perpustakaan</p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Welcome Screen -->
+  <div class="card" id="welcomeScreen">
+    <div class="welcome-screen">
+      <h2 class="welcome-title">Bantu Kami Meningkatkan Layanan</h2>
+      <p class="welcome-description">
+        Pendapat Anda sangat berharga untuk meningkatkan kualitas layanan perpustakaan. 
+        Survei ini hanya membutuhkan 3-5 menit.
+      </p>
+      
+      <!-- Previous Stats -->
+      <div class="stats-container" id="statsContainer">
+        <div class="stat-card">
+          <div class="stat-number" id="totalResponden">-</div>
+          <div class="stat-label">Total Responden</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="avgRating">-</div>
+          <div class="stat-label">Rata-rata Kepuasan</div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <canvas id="welcomeChart"></canvas>
+      </div>
+      
+      <button class="start-button" onclick="mulaiSurvei()">
+        Mulai Survei
+      </button>
     </div>
   </div>
 
-  <div class="container">
-    <!-- Welcome Screen -->
-    <div class="card" id="welcomeScreen">
-      <div class="welcome-screen">
-        <h2 class="welcome-title">Bantu Kami Meningkatkan Layanan</h2>
-        <p class="welcome-description">
-          Pendapat Anda sangat berharga untuk meningkatkan kualitas layanan perpustakaan. 
-          Survei ini hanya membutuhkan 3-5 menit.
-        </p>
-        
-        <!-- Previous Stats -->
-        <div class="stats-container" id="statsContainer">
-          <div class="stat-card">
-            <div class="stat-number" id="totalResponden">-</div>
-            <div class="stat-label">Total Responden</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="avgRating">-</div>
-            <div class="stat-label">Rata-rata Kepuasan</div>
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <canvas id="welcomeChart"></canvas>
-        </div>
-        
-        <button class="start-button" onclick="mulaiSurvei()">
-          Mulai Survei
+  <!-- Survey Section -->
+  <div class="card hidden" id="surveySection">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      <div class="progress-text" id="progressText">Langkah 1 dari 5</div>
+    </div>
+
+    <!-- Survey Form -->
+    <form id="surveyForm">
+      <div id="stepContainer"></div>
+      
+      <!-- Navigation -->
+      <div class="navigation">
+        <button type="button" class="nav-button secondary hidden" id="prevBtn">
+          ← Sebelumnya
+        </button>
+        <button type="button" class="nav-button primary" id="nextBtn">
+          Selanjutnya →
         </button>
       </div>
-    </div>
 
-    <!-- Survey Section -->
-    <div class="card hidden" id="surveySection">
-      <!-- Progress Bar -->
-      <div class="progress-container">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressBar"></div>
-        </div>
-        <div class="progress-text" id="progressText">Langkah 1 dari 5</div>
+      <!-- Comment Section -->
+      <div class="comment-section hidden" id="commentSection">
+        <label class="comment-label">Komentar & Saran (Opsional)</label>
+        <textarea 
+          class="comment-textarea" 
+          name="komentar" 
+          placeholder="Bagikan pengalaman atau saran Anda untuk perbaikan layanan..."
+          rows="4">
+        </textarea>
+        <button type="submit" class="submit-button" id="submitBtn">
+          Kirim Survei
+        </button>
       </div>
-
-      <!-- Survey Form -->
-      <form id="surveyForm">
-        <div id="stepContainer"></div>
-        
-        <!-- Navigation -->
-        <div class="navigation">
-          <button type="button" class="nav-button secondary hidden" id="prevBtn">
-            ← Sebelumnya
-          </button>
-          <button type="button" class="nav-button primary" id="nextBtn">
-            Selanjutnya →
-          </button>
-        </div>
-
-        <!-- Comment Section -->
-        <div class="comment-section hidden" id="commentSection">
-          <label class="comment-label">Komentar & Saran (Opsional)</label>
-          <textarea 
-            class="comment-textarea" 
-            name="komentar" 
-            placeholder="Bagikan pengalaman atau saran Anda untuk perbaikan layanan..."
-            rows="4">
-          </textarea>
-          <button type="submit" class="submit-button" id="submitBtn">
-            Kirim Survei
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Results Section -->
-    <div class="card hidden" id="resultSection">
-      <div class="results-card">
-        <h2 class="results-title">Terima Kasih atas Partisipasi Anda!</h2>
-        <p style="color: #64748b; margin-bottom: 30px;">
-          Berikut adalah ringkasan penilaian Anda:
-        </p>
-        <div class="chart-container">
-          <canvas id="resultChart"></canvas>
-        </div>
-      </div>
-    </div>
+    </form>
   </div>
 
-<script>
+  <!-- Results Section -->
+  <div class="card hidden" id="resultSection">
+    <div class="results-card">
+      <h2 class="results-title">Terima Kasih atas Partisipasi Anda!</h2>
+      <p style="color: #64748b; margin-bottom: 30px;">
+        Berikut adalah ringkasan penilaian Anda:
+      </p>
+      <div class="chart-container">
+        <canvas id="resultChart"></canvas>
+      </div>
+      <p id="countdownText" style="color: #64748b; margin-top: 20px;">
+        Halaman ini akan otomatis kembali ke awal dalam 15 detik.
+      </p>
+    </div>
+  </div>
+</div>
 
+<script>
 // Ambil elemen audio
 const klikSound = document.getElementById('klikSound');
 const selesaiSound = document.getElementById('selesaiSound');
 
 function playKlik() {
-  if (klikSound) {
-    klikSound.currentTime = 0;
-    klikSound.play().catch(()=>{});
-  }
+  klikSound.currentTime = 0;
+  klikSound.play().catch(() => {});
 }
 
 function playSelesai() {
-  if (selesaiSound) {
-    selesaiSound.currentTime = 0;
-    selesaiSound.play().catch(()=>{});
-  }
+  selesaiSound.currentTime = 0;
+  selesaiSound.play().catch(() => {});
 }
-
-// Mainkan klik saat tombol rating atau navigasi ditekan
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('rating-button') ||
-      e.target.id === 'nextBtn' ||
-      e.target.id === 'prevBtn') {
-    playKlik();
-  }
-});
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -570,64 +875,68 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// Survey Data
-const aspekList = [
+// Default Survey Data (akan dimuat dari Firebase jika tersedia)
+let aspekList = [
   { 
-    judul: "Keramahan Petugas", 
+    judul: "Keramahan Staf", 
     prefix: "keramahan", 
     pertanyaan: [
-      "Petugas menyambut dengan ramah",
-      "Petugas menjawab dengan sopan", 
-      "Petugas sigap membantu",
-      "Nyaman berinteraksi dengan petugas",
-      "Informasi dari petugas lengkap"
+      "Tingkat keramahan staf ketika menyambut pengunjung.",
+      "Sikap sopan santun staf dalam berinteraksi.",
+      "Senyuman atau sapaan staf kepada pengunjung.",
+      "Sikap staf yang membuat pengunjung merasa nyaman.",
+      "Konsistensi keramahan staf dari awal hingga akhir kunjungan."
     ] 
   },
   { 
-    judul: "Fasilitas Ruang Baca", 
+    judul: "Fasilitas", 
     prefix: "fasilitas", 
     pertanyaan: [
-      "Kursi dan meja nyaman",
-      "Pencahayaan cukup",
-      "Colokan listrik tersedia", 
-      "Area baca inklusif",
-      "Nyaman untuk waktu lama"
+      "Kenyamanan tempat membaca yang disediakan perpustakaan.",
+      "Kemudahaan akses area parkir bagi pengunjung.",
+      "Kondisi fasilitas pendukung seperti toilet atau mushola.",
+      "Kemudahan penggunaan fasilitas oleh pengunjung.",
+      "Kesesuaian fasilitas dengan kebutuhan pengunjung."
     ] 
   },
   { 
-    judul: "Koleksi Buku", 
+    judul: "Koleksi", 
     prefix: "koleksi", 
     pertanyaan: [
-      "Buku yang dicari tersedia",
-      "Koleksi selalu diperbarui",
-      "Penyusunan buku rapi",
-      "Kategori buku beragam", 
-      "Kondisi fisik buku baik"
+      "Daya tarik koleksi buku yang ditampilkan.",
+      "Keragaman koleksi yang tersedia.",
+      "Kesesuaian koleksi dengan harapan atau minat pengunjung.",
+      "Kejelasan informasi atau penjelasan yang menyertai koleksi.",
+      "Kondisi fisik koleksi (terawat, tertata, tidak rusak)."
     ] 
   },
   { 
-    judul: "Kebersihan dan Kenyamanan", 
+    judul: "Kebersihan", 
     prefix: "kebersihan", 
     pertanyaan: [
-      "Ruangan bersih dan terawat",
-      "Toilet bersih",
-      "Udara nyaman",
-      "Tempat sampah tersedia",
-      "Lingkungan mendukung belajar"
+      "Kebersihan area membaca untuk pemustaka.",
+      "Kebersihan toilet yang tersedia.",
+      "Kebersihan lantai, kaca, dan perabotan.",
+      "Penanganan sampah (ketersediaan tempat sampah, tidak penuh).",
+      "Kenyamanan udara dan lingkungan sekitar."
     ] 
   },
   { 
-    judul: "Proses Layanan", 
+    judul: "Layanan", 
     prefix: "layanan", 
     pertanyaan: [
-      "Peminjaman cepat dan mudah",
-      "Aturan dijelaskan jelas",
-      "Dapat notifikasi pengembalian",
-      "Pengembalian mudah",
-      "Sistem layanan online lancar"
+      "Kecepatan staf dalam merespons kebutuhan pengunjung.",
+      "Kejelasan informasi yang diberikan staf.",
+      "Perlakuan staf yang adil kepada semua pengunjung.",
+      "Kemampuan staf membantu menyelesaikan masalah atau pertanyaan.",
+      "Kepuasan pengunjung terhadap layanan secara keseluruhan."
     ] 
   }
 ];
+
+// Admin Configuration
+const ADMIN_PASSWORD = "admin123"; // Ganti dengan password yang lebih aman
+let isAdminLoggedIn = false;
 
 // Survey State
 let currentStep = 0;
@@ -637,6 +946,124 @@ const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const commentSection = document.getElementById("commentSection");
 const resultSection = document.getElementById("resultSection");
+
+// Load Questions from Firebase on startup
+async function loadQuestionsFromFirebase() {
+  try {
+    const snapshot = await database.ref('survey_questions').once('value');
+    const data = snapshot.val();
+    if (data) {
+      aspekList = data;
+      console.log("✅ Pertanyaan berhasil dimuat dari Firebase");
+    }
+  } catch (error) {
+    console.log("⚠️ Menggunakan pertanyaan default:", error);
+  }
+}
+
+// Admin Functions
+function openAdmin() {
+  document.getElementById('adminModal').classList.remove('hidden');
+  if (isAdminLoggedIn) {
+    showAdminContent();
+  } else {
+    showAdminLogin();
+  }
+}
+
+function closeAdmin() {
+  document.getElementById('adminModal').classList.add('hidden');
+}
+
+function showAdminLogin() {
+  document.getElementById('adminLogin').classList.remove('hidden');
+  document.getElementById('adminContent').classList.add('hidden');
+}
+
+function showAdminContent() {
+  document.getElementById('adminLogin').classList.add('hidden');
+  document.getElementById('adminContent').classList.remove('hidden');
+  renderAdminEditor();
+}
+
+function loginAdmin() {
+  const password = document.getElementById('adminPasswordInput').value;
+  if (password === ADMIN_PASSWORD) {
+    isAdminLoggedIn = true;
+    showAdminContent();
+    playKlik();
+  } else {
+    alert('❌ Password salah!');
+    document.getElementById('adminPasswordInput').value = '';
+  }
+}
+
+function renderAdminEditor() {
+  const adminEditor = document.getElementById('adminEditor');
+  adminEditor.innerHTML = '';
+  
+  aspekList.forEach((aspek, aspekIndex) => {
+    const sectionHTML = `
+      <div class="admin-section">
+        <h3>📝 ${aspek.judul}</h3>
+        ${aspek.pertanyaan.map((pertanyaan, qIndex) => `
+          <div class="question-editor">
+            <label>Pertanyaan ${qIndex + 1}:</label>
+            <input type="text" 
+              class="question-input" 
+              data-aspek="${aspekIndex}" 
+              data-question="${qIndex}"
+              value="${pertanyaan}"
+              placeholder="Masukkan pertanyaan...">
+          </div>
+        `).join('')}
+      </div>
+    `;
+    adminEditor.innerHTML += sectionHTML;
+  });
+}
+
+async function saveQuestions() {
+  // Collect all updated questions
+  const inputs = document.querySelectorAll('.question-input');
+  const updatedAspekList = JSON.parse(JSON.stringify(aspekList)); // Deep copy
+  
+  inputs.forEach(input => {
+    const aspekIndex = parseInt(input.dataset.aspek);
+    const questionIndex = parseInt(input.dataset.question);
+    updatedAspekList[aspekIndex].pertanyaan[questionIndex] = input.value.trim();
+  });
+  
+  // Validate - ensure no empty questions
+  let hasEmpty = false;
+  updatedAspekList.forEach(aspek => {
+    aspek.pertanyaan.forEach(pertanyaan => {
+      if (!pertanyaan.trim()) {
+        hasEmpty = true;
+      }
+    });
+  });
+  
+  if (hasEmpty) {
+    alert('⚠️ Semua pertanyaan harus diisi!');
+    return;
+  }
+  
+  try {
+    // Save to Firebase
+    await database.ref('survey_questions').set(updatedAspekList);
+    
+    // Update local data
+    aspekList = updatedAspekList;
+    
+    alert('✅ Pertanyaan berhasil disimpan!');
+    playSelesai();
+    closeAdmin();
+  } catch (error) {
+    console.error('Error saving questions:', error);
+    alert('❌ Gagal menyimpan pertanyaan. Coba lagi.');
+  }
+}
 
 // Initialize Survey
 function renderStep(step) {
@@ -667,7 +1094,7 @@ function renderStep(step) {
     `;
   });
   
-  // Add event listeners to rating buttons
+  // Add event listeners
   document.querySelectorAll('.rating-button').forEach(button => {
     button.addEventListener('click', (e) => {
       const questionId = e.target.dataset.id;
@@ -675,18 +1102,34 @@ function renderStep(step) {
       
       jawaban[questionId] = value;
       
-      // Update button states
-      document.querySelectorAll(`[data-id="${questionId}"]`).forEach(btn => {
-        btn.classList.remove('active');
-      });
+      e.target.classList.add('clicked');
+      setTimeout(() => e.target.classList.remove('clicked'), 600);
+      
+      document.querySelectorAll(`[data-id="${questionId}"]`).forEach(btn => btn.classList.remove('active'));
       e.target.classList.add('active');
+      
+      playKlik();
+    });
+
+    button.addEventListener('mousemove', function(e) {
+      const rect = this.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = e.clientX - centerX;
+      const deltaY = e.clientY - centerY;
+      
+      this.style.transform = `translate(${deltaX * 0.1}px, ${deltaY * 0.1}px) scale(1.15) rotate(5deg) translateY(-5px)`;
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      if (!this.classList.contains('active')) {
+        this.style.transform = '';
+      }
     });
   });
   
-  // Update navigation
   prevBtn.classList.toggle('hidden', step === 0);
   nextBtn.textContent = step === aspekList.length - 1 ? 'Selesai →' : 'Selanjutnya →';
-  
   updateProgress();
 }
 
@@ -696,25 +1139,29 @@ function updateProgress() {
   document.getElementById('progressText').textContent = `Langkah ${currentStep + 1} dari ${aspekList.length}`;
 }
 
-// Navigation Events
+// Navigation
 nextBtn.addEventListener('click', () => {
   if (currentStep < aspekList.length - 1) {
     currentStep++;
     renderStep(currentStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
-    // Show comment section
     stepContainer.style.display = 'none';
     document.querySelector('.navigation').style.display = 'none';
     document.querySelector('.progress-container').style.display = 'none';
     commentSection.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  playKlik();
 });
 
 prevBtn.addEventListener('click', () => {
   if (currentStep > 0) {
     currentStep--;
     renderStep(currentStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  playKlik();
 });
 
 // Form Submission
@@ -727,7 +1174,6 @@ document.getElementById('surveyForm').addEventListener('submit', async (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Mengirim...';
   
-  // Calculate results
   const hasil = aspekList.map(aspek => {
     let total = 0;
     for (let i = 1; i <= 5; i++) {
@@ -736,7 +1182,6 @@ document.getElementById('surveyForm').addEventListener('submit', async (e) => {
     return Math.round(total / 5);
   });
   
-  // Prepare data
   const dataKirim = {
     waktu: new Date().toISOString(),
     komentar: komentarField.value,
@@ -752,15 +1197,27 @@ document.getElementById('surveyForm').addEventListener('submit', async (e) => {
     await database.ref('respon_survei').push(dataKirim);
     playSelesai();
     
-    // Show success
-    submitBtn.textContent = '✓ Terkirim';
-    submitBtn.style.background = '#10b981';
+    submitBtn.textContent = '✓ Terkirim! Akan reset dalam 15 detik...';
     
-    // Show results
     setTimeout(() => {
       document.getElementById('surveySection').classList.add('hidden');
       resultSection.classList.remove('hidden');
       showResults(hasil);
+
+      let timeLeft = 15;
+      const countdown = setInterval(() => {
+        submitBtn.textContent = `✓ Terkirim! Akan reset dalam ${timeLeft} detik...`;
+        const countdownText = document.getElementById('countdownText');
+        if (countdownText) {
+          countdownText.textContent = `Halaman ini akan otomatis kembali ke awal dalam ${timeLeft} detik.`;
+        }
+        timeLeft--;
+
+        if (timeLeft < 0) {
+          clearInterval(countdown);
+          location.reload();
+        }
+      }, 1000);
     }, 1000);
     
   } catch (error) {
@@ -780,13 +1237,7 @@ function showResults(hasil) {
       labels: aspekList.map(a => a.judul),
       datasets: [{
         data: hasil,
-        backgroundColor: [
-          '#667eea',
-          '#764ba2', 
-          '#f093fb',
-          '#f5576c',
-          '#4facfe'
-        ],
+        backgroundColor: ['#667eea','#764ba2','#f093fb','#f5576c','#4facfe'],
         borderWidth: 0
       }]
     },
@@ -795,10 +1246,7 @@ function showResults(hasil) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            padding: 20,
-            usePointStyle: true
-          }
+          labels: { padding: 20, usePointStyle: true }
         }
       }
     }
@@ -810,49 +1258,46 @@ async function loadWelcomeStats() {
   try {
     const snapshot = await database.ref('respon_survei').once('value');
     const data = snapshot.val();
-    
+    const totalEl = document.getElementById('totalResponden');
+    const avgEl = document.getElementById('avgRating');
+
     if (!data) {
-      document.getElementById('totalResponden').textContent = '0';
-      document.getElementById('avgRating').textContent = '-';
+      totalEl.textContent = '0';
+      avgEl.textContent = '-';
       return;
     }
     
     const responses = Object.values(data);
     const totalResponden = responses.length;
-    
-    // Calculate averages
-    const totals = [0, 0, 0, 0, 0];
-    responses.forEach(response => {
-      if (response.hasil) {
-        totals[0] += response.hasil.keramahan || 0;
-        totals[1] += response.hasil.fasilitas || 0;
-        totals[2] += response.hasil.koleksi || 0;
-        totals[3] += response.hasil.kebersihan || 0;
-        totals[4] += response.hasil.layanan || 0;
+    const totals = [0,0,0,0,0];
+    responses.forEach(r => {
+      if (r.hasil) {
+        totals[0] += r.hasil.keramahan || 0;
+        totals[1] += r.hasil.fasilitas || 0;
+        totals[2] += r.hasil.koleksi || 0;
+        totals[3] += r.hasil.kebersihan || 0;
+        totals[4] += r.hasil.layanan || 0;
       }
     });
-    
-    const averages = totals.map(total => Math.round(total / totalResponden));
-    const overallAvg = Math.round(averages.reduce((a, b) => a + b, 0) / 5);
-    
-    document.getElementById('totalResponden').textContent = totalResponden;
-    document.getElementById('avgRating').textContent = `${overallAvg}%`;
-    
-    // Create welcome chart
+    const averages = totals.map(t => Math.round(t / totalResponden));
+    const overallAvg = Math.round(averages.reduce((a,b)=>a+b,0)/5);
+    totalEl.textContent = totalResponden;
+    avgEl.textContent = overallAvg + '%';
+
     const ctx = document.getElementById('welcomeChart').getContext('2d');
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Keramahan', 'Fasilitas', 'Koleksi', 'Kebersihan', 'Layanan'],
+        labels: ['Keramahan','Fasilitas','Koleksi','Kebersihan','Layanan'],
         datasets: [{
           label: 'Rata-rata Kepuasan (%)',
           data: averages,
           backgroundColor: [
-            'rgba(102, 126, 234, 0.8)',
-            'rgba(118, 75, 162, 0.8)',
-            'rgba(240, 147, 251, 0.8)', 
-            'rgba(245, 87, 108, 0.8)',
-            'rgba(79, 172, 254, 0.8)'
+            'rgba(102,126,234,0.8)',
+            'rgba(118,75,162,0.8)',
+            'rgba(240,147,251,0.8)',
+            'rgba(245,87,108,0.8)',
+            'rgba(79,172,254,0.8)'
           ],
           borderRadius: 8,
           borderSkipped: false
@@ -860,61 +1305,65 @@ async function loadWelcomeStats() {
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          y: { 
+          y: {
             beginAtZero: true,
             max: 100,
-            ticks: {
-              callback: function(value) {
-                return value + '%';
-              }
-            }
+            ticks: { callback: (v)=> v + '%' }
           }
         }
       }
     });
-    
-  } catch (error) {
-    console.error('Error loading stats:', error);
+  } catch (err) {
+    console.error('Error loading stats:', err);
   }
 }
 
-// Start Survey Function
 function mulaiSurvei() {
   document.getElementById('welcomeScreen').classList.add('hidden');
   document.getElementById('surveySection').classList.remove('hidden');
   renderStep(currentStep);
 }
 
-// Initialize
-
-// Deteksi apakah device adalah mobile
 function isMobileDevice() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const statsContainer = document.getElementById('statsContainer');
-  const chartContainer = document.querySelector('#welcomeScreen .chart-container');
-  if (isMobileDevice()) {
-    // Sembunyikan statistik dan chart di mobile
-    if (statsContainer) statsContainer.style.display = 'none';
-    if (chartContainer) chartContainer.style.display = 'none';
-  } else {
-    // Desktop -> tampilkan statistik dan chart
-    if (statsContainer) statsContainer.style.display = 'grid';
-    if (chartContainer) chartContainer.style.display = 'block';
+// Close modal when clicking outside
+document.getElementById('adminModal').addEventListener('click', (e) => {
+  if (e.target.id === 'adminModal') {
+    closeAdmin();
   }
 });
 
-window.addEventListener('load', () => {
-  loadWelcomeStats();
-  renderStep(currentStep);
+// Keyboard shortcuts for admin
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    openAdmin();
+  }
+  if (e.key === 'Escape' && !document.getElementById('adminModal').classList.contains('hidden')) {
+    closeAdmin();
+  }
+});
+
+// Initialize application
+window.addEventListener('DOMContentLoaded', async () => {
+  // Load questions from Firebase first
+  await loadQuestionsFromFirebase();
+  
+  const statsContainer = document.getElementById('statsContainer');
+  const chartContainer = document.querySelector('#welcomeScreen .chart-container');
+  if (isMobileDevice()) {
+    if (statsContainer) statsContainer.style.display = 'none';
+    if (chartContainer) chartContainer.style.display = 'none';
+  } else {
+    if (statsContainer) statsContainer.style.display = 'grid';
+    if (chartContainer) chartContainer.style.display = 'block';
+    loadWelcomeStats();
+  }
 });
 </script>
-
 </body>
 </html>
